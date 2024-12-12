@@ -1,0 +1,188 @@
+```         
+title: "My document"
+format:
+  pdf:
+      toc: true
+      number-sections: true
+      colorlinks: true
+```
+
+|                     |                                      |
+|---------------------|--------------------------------------|
+| Group Project title | Conjunction and Disjunction Judgment |
+| Group members       | Roshan Pulapura                      |
+| Your mark           | 72                                   |
+
+## Final Reflection
+
+Overall, I felt that Quantitative Methods was a challenging and fun learning experience for me, in terms of both the theoretical components and the practical components. For the most part, I think I’ve engaged with this course on a pretty deep level just because we covered so many topics that I’m really interested in! 
+
+In terms of the seminars, I enjoyed both the more linguistics-oriented discussion topics and readings (minoritized languages, climate change, EDI), as well as the “philosophy of statistics” type readings that we focused more on towards the beginning and end of the course. Especially for the more linguistically oriented topics, I would always try to think ahead and connect the discussion questions to other topics I was learning about in other courses, concepts I had come upon in my own independent reading and research, experiences from my personal life, etc, and I found it really valuable to talk with the other students and the tutors and Stefano to get their perspectives too, and to think about these topics from a more statistical perspective (both in terms of how we can use our linguistic knowledge to build language models, and how we can use our statistical knowledge to do better linguistic research). The more stats-centric papers were also fun to read and talk about, and they definitely have gotten me to reconsider a lot of entrenched “rituals” that I take for granted, to approach the research that I interact with in a more discerning way, and to advocate for and contribute to better practices for reproducibility and replicability, open research, etc. I think I maybe overdid it a little bit with how much writing and reflecting I was doing on the seminar topics in comparison to the practicals, but I also genuinely appreciated the detailed, thoughtful feedback (and I apologize if I wrote too much, sometimes I just got carried away!). 
+
+In terms of the practical component of the course, I put in a lot of independent effort to improve both on the mathematical side and the engineering/coding side. The Statistical Rethinking textbook was a good resource which provided a great deal of additional depth and formality to the Notebook readings– I would work through the Notebook entries and understand the concepts as they applied to the particular dataset, which was a good way to introduce myself to the more complex ideas in a hands-on and concrete way, and then later the textbook would help me generalize the concepts more broadly and draw upon the principles of Bayesian statistics to actually understand what was going on in the R packages. I managed to make it through basically the entire map of Notebook entries and feel comfortable with the more advanced regressions (Bernoulli, Poisson, multiple interactions, etc). In terms of the labs, I also did a lot of additional reading not specifically related to models, in terms of documentation for the Challenges that I worked on– for example, learning the udpipe library for making syntax dependency trees for the Yoda challenge, as well as the edit distance, clustering, and spatial plotting packages for the Gaelic challenge. This wasn’t really a type of coding I was super familiar with before this course (I have plenty of experience, but not really in terms of statistical modeling or plotting and making figures, which is so important for linguistics research and I feel sort of ashamed to have neglected until now!), but I do love coding and I liked being able to think about it in a totally different way. 
+
+For my final project, I really wanted to work on a project involving syntactic structure and disambiguation of singular they pronouns, but I was struggling to find a dataset that would work, and I didn’t have time to gather the data myself (I didn’t have a partner for the project unfortunately). So I decided that practically speaking I would have to find a different dataset to work with.
+
+I'd been reading a lot of pragmatics papers lately, and I found one (<https://pdfs.semanticscholar.org/ad70/8c8dd7c50c847a72cc29b28da344bb5b936a.pdf>) that used a simplified Likert scale to assess how children and adults interpret conjunctions and disjunctions. For example, if a participant saw a picture of a cat and a dog, would they consider "cat or dog" to be a correct, incorrect, or sort-of correct description? In other words, does the listener makes an inference that the stronger "and" claim is false if the weaker "or" claim is chosen? I was working through the Likert scale readings (the Verissimo paper in the Notebooks, etc), so I figured I would try to plot and run regressions properly on this sort of ordinal data for my final project. After creating a few basic bar graphs just to get a feel of the data, I used the HH package to create a divergent stacked bar chart to compare how adults and children responded to each type of prompt. From this information, I identified three categories where there seemed to be a noticeable difference between adults and children: X.XandY, X.XorY, and XY.XorY. In other words, does "cat and dog" describe just a cat, does "cat or dog" describe just a cat, and does "cat or dog" describe a cat and a dog? In particular, children seemed far more likely to accept the latter (showing that they do not make the pragmatic inference as often as adults do).
+
+Based on this finding, I also wanted to do a regression with this dataset, so I decided to investigate the role of age, since some granular detail for childrens' age was provided in the dataset. In particular, I was curious to see if the children began to respond more pragmatically when they got older. Following the Verissimo paper, I computed the brms cumulative model using age as a predictor for the ordinal response, and then I plotted the conditional effects. Interestingly, there was more change with age for the X.XandY and X.XorY tasks than for the XY.XorY task– older children were more likely to accept both of the former as they got older. That result was not surprising for the X.XorY task (it is more in line with what the adults were doing), but it was surprising for the X.XandY task (where the older children were actually less like the adults).
+
+To be honest, I think I was putting in 80s-90s level work into this course for the first three quarters of the semester. I exhausted almost all of the advanced Notebook entries and did a ton of additional reading, while working through the R exercises from the textbook as well. I think I’ve gained a ton of familiarity with Bayesian statistics both from a philosophical and mathematical standpoint, and I’ve been able to apply what I’ve learned to my other courses (making regressions in R for speech processing, a growing interest in Bayesian cognitive modeling for pragmatics along the lines of the Burnett paper that Stefano shared on the course page). However, unfortunately, I’ve had some pretty severe health issues in the last couple weeks of the term, and since this course isn’t eligible for extension, I decided I’d just do my best to get anything at all in on time for the deadline for the final project– I unfortunately don’t have too many friends here so I had to do the project by myself in a very limited amount of time, so I had to select something small enough to be manageable (I’m applying for exceptional circumstances but don’t want to risk getting a 0 in the course in case anything were to go wrong– if it all works out, I'll post an updated version of this). To be honest, I’m really sad I didn’t get to do a bigger project since I was super excited to work on my original topic, and I think I’ve gained the skills that would’ve helped me come up with some interesting results. I’ve decided to give myself a 72 overall, which I think accounts for the diminished quality of my output in the final couple weeks while still recognizing the extensive level of engagement I was putting into this course for the majority of the term. 
+
+## Final Project
+
+```{r}
+library(tidyverse)
+library(readxl)
+
+adults1 <- read_csv("./disjunction_comprehension/study1/2_processed_data/exp1_data_processed.csv")
+
+adults1 |>
+  filter(dv_type==2) |>
+  ggplot(aes(x = response, fill=response)) +
+  geom_bar() +
+  facet_grid(cols = vars(trial_type)) +
+  theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+  
+```
+
+```{r}
+
+adults1 |>
+  filter(dv_type==3) |>
+  ggplot(aes(x = response, fill=response)) +
+  geom_bar() +
+  facet_grid(cols = vars(trial_type)) +
+  theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+
+adults1 |>
+  filter(dv_type==3) |>
+  ggplot(aes(x = trial_type, fill=response)) +
+  geom_bar(position="fill") +
+  theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1)) +
+  labs(x="Trial Type", y="Response")
+```
+
+```{r}
+children2 <- read_csv("./disjunction_comprehension/study2/2_processed_data/exp2_data_processed.csv")
+children2 <- children2 %>% drop_na()
+
+children2 |>
+  filter(dv_type==3) |>
+  ggplot(aes(x = response, fill=response)) +
+  geom_bar() +
+  facet_grid(cols = vars(trial_type)) +
+  theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1))
+
+children2 |>
+  filter(dv_type==3) |>
+  ggplot(aes(x = trial_type, fill=response)) +
+  geom_bar(position="fill") +
+  theme(axis.text.x = element_text(angle=90, vjust=.5, hjust=1)) +
+  labs(x="Trial Type", y="Response")
+
+
+```
+
+```{r}
+adults_lik <- adults1 |>
+  filter(dv_type==3) |>
+  select(trial_type, response) |>
+  mutate(age="adult")
+
+children_lik <- children2 |>
+  filter(dv_type==3) |>
+  select(trial_type, response) |>
+  mutate(age="child")
+
+total_lik <- bind_rows(adults_lik, children_lik) |>
+  count(age, trial_type, response) |>
+  pivot_wider(names_from = response, values_from = n) 
+
+total_lik[is.na(total_lik)] <- 0
+
+total_lik
+```
+
+```{r}
+HH::likert(
+  trial_type ~ . | age,
+  total_lik,
+  as.percent = TRUE,
+  main = "Acceptability Judgment for Adults and Children"
+)
+```
+
+```{r}
+
+children_lik_2 <- children2 |>
+  filter(dv_type==3) |>
+  mutate(age_round = round(age_year, 1)) |>
+  select(age_round, trial_type, response) |>
+  count(age_round, trial_type, response) |>
+  pivot_wider(names_from = response, values_from = n) 
+
+children_lik_2[is.na(children_lik_2)] <- 0
+
+children_lik_2
+```
+
+```{r}
+library(brms)
+
+children_or <- children2 |>
+  filter(dv_type==3) |>
+  filter(trial_type=="XY.XorY") |>
+  mutate(age_round = round(age_year, 1)) |>
+  mutate(response_num = recode(response, "Right" = 1, "Kinda Right" = 2, "Wrong" = 3)) |>
+  select(age_round, trial_type, response_num) 
+            
+children_or
+```
+
+```{r}
+age_or <- brm(response_num ~ age_round,
+  data = children_or,
+  family = cumulative(link="probit", threshold="flexible"))
+
+summary(age_or)
+conditional_effects(age_or, categorical = T)
+```
+
+```{r}
+children_and <- children2 |>
+  filter(dv_type==3) |>
+  filter(trial_type=="X.XandY") |>
+  mutate(age_round = round(age_year, 1)) |>
+  mutate(response_num = recode(response, "Right" = 1, "Kinda Right" = 2, "Wrong" = 3)) |>
+  select(age_round, trial_type, response_num) 
+            
+children_and
+
+age_and <- brm(response_num ~ age_round,
+  data = children_and,
+  family = cumulative(link="probit", threshold="flexible"),
+  file = "cache/and")
+
+summary(age_and)
+conditional_effects(age_and, categorical = T)
+```
+
+```{r}
+children_or2 <- children2 |>
+  filter(dv_type==3) |>
+  filter(trial_type=="X.XorY") |>
+  mutate(age_round = round(age_year, 1)) |>
+  mutate(response_num = recode(response, "Right" = 1, "Kinda Right" = 2, "Wrong" = 3)) |>
+  select(age_round, trial_type, response_num) 
+            
+children_or2
+
+age_or2 <- brm(response_num ~ age_round,
+  data = children_or2,
+  family = cumulative(link="probit", threshold="flexible"),
+  file = "cache/or2")
+
+summary(age_or2)
+conditional_effects(age_or2, categorical = T)
+```
